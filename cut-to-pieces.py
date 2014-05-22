@@ -35,7 +35,7 @@ def paths_to_images(image, drawable, path):
     pdb.gimp_context_pop()
 
 register(
-    'python-fu-paths-to-pieces',
+    'python-fu-cut-to-pieces',
     'Cut image by closed paths',
     'Cut image into pieces by closed paths',
     'Arthur Bikmullin',
