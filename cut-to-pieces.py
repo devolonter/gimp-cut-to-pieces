@@ -9,28 +9,57 @@ def paths_to_images(image, drawable, path):
 
     cnt, vectors = pdb.gimp_image_get_vectors(image)
 
-    if cnt > 0:
-        cnt = 0
+    i = 0
+    
+    max_width = 0
+    max_height = 0
 
-        for id in vectors:
-            vector = gimp.Vectors.from_id(id)
-            pdb.gimp_vectors_to_selection(vector, 2, 1, 0, 0, 0)
+    for id in vectors:
+        vector = gimp.Vectors.from_id(id)
+        pdb.gimp_image_select_item(image, 2, vector)
+        pdb.gimp_edit_stroke_vectors(drawable, vector)
+        n_e = False
+        x1 = None
+        y1 = None
+        x2 = None
+        y2 = None
+        e, x1, y1, x2, y2 = pdb.gimp_selection_bounds(image)
+        width = x2 - x1
+        height = y2 - y1
+        if e and width > max_width:
+            max_width = width
+        if e and height > max_height:
+            max_height = height
+    for id in vectors:
+        vector = gimp.Vectors.from_id(id)
+        pdb.gimp_vectors_to_selection(vector, 2, 1, 0, 0, 0)
+        if pdb.gimp_edit_copy(drawable):
+            new_image = pdb.gimp_image_new(max_width, max_height, 0)
+            new_layer = pdb.gimp_layer_new(
+                new_image,
+                max_width,
+                max_height,
+                1,
+                'main',
+                0.0,
+                0,
+            )
+            new_image.add_layer(new_layer, 0)
+            pdb.gimp_edit_paste(new_layer, True)
+            sel = pdb.gimp_image_get_floating_sel(new_image)
+            # pdb.gimp_message(sel)
+            pdb.gimp_floating_sel_anchor(sel)
+            pdb.gimp_file_save(
+                new_image,
+                pdb.gimp_image_get_active_drawable(new_image),
+                "%s/piece_%s.png" % (path, i),
+                "%s/piece_%s.png" % (path, i)
+            )
 
-            if pdb.gimp_edit_copy(drawable):
-                new_image = pdb.gimp_edit_paste_as_new()
-
-                pdb.gimp_file_save(
-                    new_image,
-                    pdb.gimp_image_get_active_drawable(new_image),
-                    "%s/piece.%s.png" % (path, cnt),
-                    "%s/piece.%s.png" % (path, cnt)
-                )
-
-                pdb.gimp_image_delete(new_image)
-                cnt += 1
+            pdb.gimp_image_delete(new_image)
+            i += 1
 
         pdb.gimp_selection_none(image)
-
     pdb.gimp_image_undo_group_end(image)
     pdb.gimp_context_pop()
 
