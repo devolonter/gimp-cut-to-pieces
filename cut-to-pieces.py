@@ -18,11 +18,6 @@ def paths_to_images(image, drawable, path):
         vector = gimp.Vectors.from_id(id)
         pdb.gimp_image_select_item(image, 2, vector)
         pdb.gimp_edit_stroke_vectors(drawable, vector)
-        n_e = False
-        x1 = None
-        y1 = None
-        x2 = None
-        y2 = None
         e, x1, y1, x2, y2 = pdb.gimp_selection_bounds(image)
         width = x2 - x1
         height = y2 - y1
